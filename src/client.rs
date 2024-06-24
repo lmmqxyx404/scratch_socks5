@@ -1,3 +1,4 @@
+use tokio::io::{AsyncRead, AsyncWrite};
 
 /// 客户端的一些基本设置
 #[derive(Debug)]
@@ -9,25 +10,33 @@ pub struct Config {
     skip_auth: bool,
 }
 
-
 impl Default for Config {
-  fn default() -> Self {
-      Config {
-          connect_timeout: None,
-          skip_auth: false,
-      }
-  }
+    fn default() -> Self {
+        Config {
+            connect_timeout: None,
+            skip_auth: false,
+        }
+    }
 }
 
 impl Config {
-  /// How much time it should wait until the socket connect times out.
-  pub fn set_connect_timeout(&mut self, n: u64) -> &mut Self {
-      self.connect_timeout = Some(n);
-      self
-  }
+    /// How much time it should wait until the socket connect times out.
+    pub fn set_connect_timeout(&mut self, n: u64) -> &mut Self {
+        self.connect_timeout = Some(n);
+        self
+    }
 
-  pub fn set_skip_auth(&mut self, value: bool) -> &mut Self {
-      self.skip_auth = value;
-      self
-  }
+    pub fn set_skip_auth(&mut self, value: bool) -> &mut Self {
+        self.skip_auth = value;
+        self
+    }
+}
+
+/// A SOCKS5 client.
+/// `Socks5Stream` implements [`AsyncRead`] and [`AsyncWrite`].
+#[derive(Debug)]
+pub struct Socks5Stream<S: AsyncRead + AsyncWrite + Unpin> {
+    socket: S,
+    // todo: add target_addr: Option<TargetAddr>,
+    config: Config,
 }

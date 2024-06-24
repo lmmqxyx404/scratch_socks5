@@ -241,6 +241,7 @@ name = "socks5_scratch"
 version = "0.1.0"
 dependencies = [
  "env_logger",
+ "log",
  "thiserror",
  "tokio",
 ]

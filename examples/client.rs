@@ -1,3 +1,7 @@
+#[forbid(unsafe_code)]
+#[macro_use]
+extern crate log;
+
 use socks5_scratch::{client::Config, Result};
 
 #[derive(Debug)]
@@ -41,5 +45,12 @@ async fn spawn_socks_client() -> Result<()> {
     let mut config = Config::default();
     config.set_skip_auth(opt.skip_auth);
 
+    // Creating a SOCKS stream to the target address through the socks server
+    let mut socks = match opt.username {
+        _ => {
+            unimplemented!()
+            // Socks5Stream::connect(opt.socks_server, opt.target_addr, opt.target_port, config).await?
+        }
+    };
     todo!()
 }
