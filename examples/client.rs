@@ -1,4 +1,4 @@
-use socks5_scratch::Result;
+use socks5_scratch::{client::Config, Result};
 
 #[derive(Debug)]
 struct Opt {
@@ -37,5 +37,9 @@ async fn spawn_socks_client() -> Result<()> {
         target_addr: "www.github.com".to_owned(),
         target_port: 443,
     };
+    let domain = opt.target_addr.clone();
+    let mut config = Config::default();
+    config.set_skip_auth(opt.skip_auth);
+
     todo!()
 }
