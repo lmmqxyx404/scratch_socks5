@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate log;
 
-use socks5_scratch::{client::Config, Result};
+use socks5_scratch::{client::{Config, Socks5Stream}, Result};
 
 #[derive(Debug)]
 struct Opt {
@@ -48,8 +48,8 @@ async fn spawn_socks_client() -> Result<()> {
     // Creating a SOCKS stream to the target address through the socks server
     let mut socks = match opt.username {
         _ => {
-            unimplemented!()
-            // Socks5Stream::connect(opt.socks_server, opt.target_addr, opt.target_port, config).await?
+            Socks5Stream::connect(opt.socks_server, opt.target_addr, opt.target_port, config)
+                .await?
         }
     };
     todo!()

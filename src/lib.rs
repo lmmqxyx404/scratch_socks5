@@ -11,4 +11,8 @@ pub enum SocksError {
 
 pub type Result<T, E = SocksError> = core::result::Result<T, E>;
 
+/// 1
 pub mod client;
+/// 2
+pub mod util;
+

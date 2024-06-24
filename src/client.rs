@@ -1,5 +1,11 @@
 use tokio::io::{AsyncRead, AsyncWrite};
 
+use crate::{util::target_addr::TargetAddr, Result};
+
+use std::net::ToSocketAddrs;
+
+use tokio::net::TcpStream;
+
 /// 客户端的一些基本设置
 #[derive(Debug)]
 pub struct Config {
@@ -37,6 +43,22 @@ impl Config {
 #[derive(Debug)]
 pub struct Socks5Stream<S: AsyncRead + AsyncWrite + Unpin> {
     socket: S,
-    // todo: add target_addr: Option<TargetAddr>,
+    target_addr: Option<TargetAddr>,
     config: Config,
+}
+
+/// Api if you want to use TcpStream to create a new connection to the SOCKS5 server.
+impl Socks5Stream<TcpStream> {
+    /// Connects to a target server through a SOCKS5 proxy.
+    pub async fn connect<T>(
+        socks_server: T,
+        target_addr: String,
+        target_port: u16,
+        config: Config,
+    ) -> Result<Self>
+    where
+        T: ToSocketAddrs,
+    {
+        todo!()
+    }
 }
