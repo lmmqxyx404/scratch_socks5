@@ -6,7 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+thiserror = "1"
 
 
 [[example]]
 name = "client"
+
+# Dependencies for examples and tests
+[dev-dependencies]
+env_logger = "0.9"
+
+tokio = { version = "1", features = [
+    "io-util",
+    "net",
+    "time",
+    "rt-multi-thread",
+    "macros",
+] }
