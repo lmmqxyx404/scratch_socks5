@@ -16,3 +16,15 @@ pub mod client;
 /// 2
 pub mod util;
 
+#[derive(Debug, PartialEq)]
+pub enum Socks5Command {
+    TCPConnect,
+    TCPBind,
+    UDPAssociate,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum AuthenticationMethod {
+    None,
+    Password { username: String, password: String },
+}

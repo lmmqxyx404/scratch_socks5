@@ -1,6 +1,6 @@
 use tokio::io::{AsyncRead, AsyncWrite};
 
-use crate::{util::target_addr::TargetAddr, Result};
+use crate::{util::target_addr::TargetAddr, AuthenticationMethod, Result, Socks5Command};
 
 use std::net::ToSocketAddrs;
 
@@ -54,6 +54,30 @@ impl Socks5Stream<TcpStream> {
         socks_server: T,
         target_addr: String,
         target_port: u16,
+        config: Config,
+    ) -> Result<Self>
+    where
+        T: ToSocketAddrs,
+    {
+        Self::connect_raw(
+            Socks5Command::TCPConnect,
+            socks_server,
+            target_addr,
+            target_port,
+            None,
+            config,
+        )
+        .await
+    }
+
+    /// Process clients SOCKS requests
+    /// This is the entry point where a whole request is processed.
+    pub async fn connect_raw<T>(
+        cmd: Socks5Command,
+        socks_server: T,
+        target_addr: String,
+        target_port: u16,
+        auth: Option<AuthenticationMethod>,
         config: Config,
     ) -> Result<Self>
     where
