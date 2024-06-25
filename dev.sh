@@ -1,1 +1,1 @@
-cargo watch -x "run --example client"
+RUST_LOG=debug cargo watch -x "run --example client"

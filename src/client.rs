@@ -121,7 +121,29 @@ where
         auth: Option<AuthenticationMethod>,
         config: Config,
     ) -> Result<Self> {
-        todo!()
+        let mut stream = Socks5Stream {
+            socket,
+            config,
+            target_addr: None,
+        };
+
+        // Auth none is always used by default.
+        let mut methods = vec![AuthenticationMethod::None];
+
+        if let Some(method) = auth {
+            // add any other method if supplied
+            methods.push(method);
+        }
+
+        // Handshake Lifecycle
+        if !stream.config.skip_auth {
+            debug!("to auth");
+            // let methods = stream.send_version_and_methods(methods).await?;
+            // stream.which_method_accepted(methods).await?;
+        } else {
+            debug!("skipping auth");
+        }
+        Ok(stream)
     }
     /// 2
     pub async fn request(

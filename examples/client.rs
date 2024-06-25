@@ -38,8 +38,8 @@ async fn spawn_socks_client() -> Result<()> {
         skip_auth: true,
         socks_server: "127.0.0.1:1337".to_owned(),
         // 可以自行替换
-        target_addr: "www.github.com".to_owned(),
-        target_port: 443,
+        target_addr: "perdu.com".to_owned(),
+        target_port: 80,
     };
     let domain = opt.target_addr.clone();
     let mut config = Config::default();
