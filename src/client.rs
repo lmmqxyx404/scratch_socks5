@@ -1,15 +1,16 @@
 use anyhow::Context;
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
 
 use crate::{
+    consts,
     util::{
         stream::tcp_connect,
         target_addr::{TargetAddr, ToTargetAddr},
     },
-    AuthenticationMethod, Result, Socks5Command,
+    AuthenticationMethod, Result, Socks5Command, SocksError,
 };
 
-use std::net::ToSocketAddrs;
+use std::net::{SocketAddr, ToSocketAddrs};
 
 use tokio::net::TcpStream;
 
@@ -182,7 +183,71 @@ where
     /// ```
     ///
     async fn request_header(&mut self, cmd: Socks5Command) -> Result<()> {
-        todo!()
+        let mut packet = [0u8; MAX_ADDR_LEN + 3];
+        let padding: usize; // maximum len of the headers sent
+                            // build our request packet with (socks version, Command, reserved)
+        packet[..3].copy_from_slice(&[consts::SOCKS5_VERSION, cmd.as_u8(), 0x00]);
+
+        match self.target_addr.as_ref() {
+            None => {
+                if cmd == Socks5Command::UDPAssociate {
+                    debug!("UDPAssociate without target_addr, fallback to zeros.");
+                    padding = 10;
+
+                    packet[3] = 0x01;
+                    packet[4..8].copy_from_slice(&[0, 0, 0, 0]); // ip
+                    packet[8..padding].copy_from_slice(&[0, 0]); // port
+                } else {
+                    return Err(anyhow::Error::msg("target addr should be present").into());
+                }
+            }
+            Some(target_addr) => match target_addr {
+                TargetAddr::Ip(SocketAddr::V4(addr)) => {
+                    debug!("TargetAddr::IpV4");
+                    padding = 10;
+
+                    packet[3] = 0x01;
+                    debug!("addr ip {:?}", (*addr.ip()).octets());
+                    packet[4..8].copy_from_slice(&(addr.ip()).octets()); // ip
+                    packet[8..padding].copy_from_slice(&addr.port().to_be_bytes());
+                    // port
+                }
+                TargetAddr::Ip(SocketAddr::V6(addr)) => {
+                    return Err(anyhow::Error::msg("unsupported ipv6").into());
+                }
+                TargetAddr::Domain(ref domain, port) => {
+                    debug!("TargetAddr::Domain");
+                    if domain.len() > u8::MAX as usize {
+                        return Err(SocksError::ExceededMaxDomainLen(domain.len()));
+                    }
+                    padding = 5 + domain.len() + 2;
+
+                    packet[3] = 0x03; // Specify domain type
+                    packet[4] = domain.len() as u8; // domain length
+                    packet[5..(5 + domain.len())].copy_from_slice(domain.as_bytes()); // domain content
+                    packet[(5 + domain.len())..padding].copy_from_slice(&port.to_be_bytes());
+                    // port content (.to_be_bytes() convert from u16 to u8 type)
+                }
+            },
+        }
+
+        debug!("Bytes long version: {:?}", &packet[..]);
+        debug!("Bytes shorted version: {:?}", &packet[..padding]);
+        debug!("Padding: {}", &padding);
+
+        // we limit the end of the packet right after the domain + port number, we don't need to print
+        // useless 0 bytes, otherwise other protocol won't understand the request (like HTTP servers).
+        self.socket
+            .write(&packet[..padding])
+            .await
+            .context("Can't write request header's packet.")?;
+
+        self.socket
+            .flush()
+            .await
+            .context("Can't flush request header's packet")?;
+
+        Ok(())
     }
 
     /// 4. The server send a confirmation (reply) that he had successfully connected (or not) to the
@@ -191,3 +256,5 @@ where
         todo!()
     }
 }
+
+const MAX_ADDR_LEN: usize = 260;

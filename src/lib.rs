@@ -17,6 +17,9 @@ pub enum SocksError {
     /// 3 used for transfer the ReplyError to SocksError
     #[error("Error with reply: {0}.")]
     ReplyError(#[from] ReplyError),
+    /// 4
+    #[error("Domain exceeded max sequence length")]
+    ExceededMaxDomainLen(usize),
 }
 
 pub type Result<T, E = SocksError> = core::result::Result<T, E>;
@@ -63,4 +66,27 @@ pub enum ReplyError {
     #[error("Address type not supported")]
     AddressTypeNotSupported,
     //    OtherReply(u8),
+}
+
+#[rustfmt::skip]
+pub mod consts {
+    pub const SOCKS5_VERSION:                          u8 = 0x05;
+
+    pub const SOCKS5_CMD_TCP_CONNECT:                  u8 = 0x01;
+    pub const SOCKS5_CMD_TCP_BIND:                     u8 = 0x02;
+    pub const SOCKS5_CMD_UDP_ASSOCIATE:                u8 = 0x03;
+
+}
+
+#[allow(dead_code)]
+impl Socks5Command {
+    #[inline]
+    #[rustfmt::skip]
+    fn as_u8(&self) -> u8 {
+        match self {
+            Socks5Command::TCPConnect   => consts::SOCKS5_CMD_TCP_CONNECT,
+            Socks5Command::TCPBind      => consts::SOCKS5_CMD_TCP_BIND,
+            Socks5Command::UDPAssociate => consts::SOCKS5_CMD_UDP_ASSOCIATE,
+        }
+    }
 }
