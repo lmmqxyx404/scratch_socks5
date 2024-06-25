@@ -2,7 +2,10 @@ use anyhow::Context;
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{
-    util::{stream::tcp_connect, target_addr::TargetAddr},
+    util::{
+        stream::tcp_connect,
+        target_addr::{TargetAddr, ToTargetAddr},
+    },
     AuthenticationMethod, Result, Socks5Command,
 };
 
@@ -92,6 +95,12 @@ impl Socks5Stream<TcpStream> {
             .next()
             .context("unreachable")?;
         let socket = tcp_connect(addr).await?;
+        info!("Connected @ {}", &socket.peer_addr()?);
+
+        // Specify the target, here domain name, dns will be resolved on the server side
+        let target_addr = (target_addr.as_str(), target_port)
+            .to_target_addr()
+            .context("Can't convert address to TargetAddr format")?;
         todo!()
     }
 }
