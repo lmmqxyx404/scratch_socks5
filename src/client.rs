@@ -101,6 +101,34 @@ impl Socks5Stream<TcpStream> {
         let target_addr = (target_addr.as_str(), target_port)
             .to_target_addr()
             .context("Can't convert address to TargetAddr format")?;
+
+        // upgrade the TcpStream to Socks5Stream
+        let mut socks_stream = Self::use_stream(socket, auth, config).await?;
+        socks_stream.request(cmd, target_addr).await?;
+
+        Ok(socks_stream)
+    }
+}
+
+impl<S> Socks5Stream<S>
+where
+    S: AsyncRead + AsyncWrite + Unpin,
+{
+    /// 1 Possibility to use a stream already created rather than
+    /// creating a whole new `TcpStream::connect()`.
+    pub async fn use_stream(
+        socket: S,
+        auth: Option<AuthenticationMethod>,
+        config: Config,
+    ) -> Result<Self> {
+        todo!()
+    }
+    /// 2
+    pub async fn request(
+        &mut self,
+        cmd: Socks5Command,
+        target_addr: TargetAddr,
+    ) -> Result<TargetAddr> {
         todo!()
     }
 }
