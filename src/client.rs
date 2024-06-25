@@ -151,6 +151,43 @@ where
         cmd: Socks5Command,
         target_addr: TargetAddr,
     ) -> Result<TargetAddr> {
+        self.target_addr = Some(target_addr);
+
+        // Request Lifecycle
+        info!("Requesting headers `{:?}`...", &self.target_addr);
+        self.request_header(cmd).await?;
+        let bind_addr = self.read_request_reply().await?;
+
+        Ok(bind_addr)
+    }
+
+    /// 3 Decide to whether or not, accept the authentication method.
+    /// Don't forget that the methods list sent by the client, contains one or more methods.
+    ///
+    /// # Request
+    /// ```test
+    ///          +----+-----+-------+------+----------+----------+
+    ///          |VER | CMD |  RSV  | ATYP | DST.ADDR | DST.PORT |
+    ///          +----+-----+-------+------+----------+----------+
+    ///          | 1  |  1  |   1   |  1   | Variable |    2     |
+    ///          +----+-----+-------+------+----------+----------+
+    /// ```
+    ///
+    /// # Help
+    ///
+    /// To debug request use a netcat server with hexadecimal output to parse the hidden bytes:
+    ///
+    /// ```bash
+    ///    $ nc -k -l 80 | hexdump -C
+    /// ```
+    ///
+    async fn request_header(&mut self, cmd: Socks5Command) -> Result<()> {
+        todo!()
+    }
+
+    /// 4. The server send a confirmation (reply) that he had successfully connected (or not) to the
+    /// remote server.
+    async fn read_request_reply(&mut self) -> Result<TargetAddr> {
         todo!()
     }
 }
