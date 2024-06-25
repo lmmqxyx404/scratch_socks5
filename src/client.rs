@@ -1,3 +1,4 @@
+use anyhow::Context;
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{util::target_addr::TargetAddr, AuthenticationMethod, Result, Socks5Command};
@@ -36,6 +37,7 @@ impl Config {
         self.skip_auth = value;
         self
     }
+
 }
 
 /// A SOCKS5 client.
@@ -83,6 +85,10 @@ impl Socks5Stream<TcpStream> {
     where
         T: ToSocketAddrs,
     {
+        let addr = socks_server
+            .to_socket_addrs()?
+            .next()
+            .context("unreachable")?;
         todo!()
     }
 }

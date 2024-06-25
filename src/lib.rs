@@ -2,11 +2,18 @@
 #[macro_use]
 extern crate log;
 
+use std::io;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum SocksError {
-
+    /// used for transfer the std::io::Error to SocksError `.to_socket_addrs()?`
+    #[error("i/o error: {0}")]
+    Io(#[from] io::Error),
+    /// used for transfer the anyhow::Error to SocksError `socks_server.to_socket_addrs()?`   #[error("Other: `{0}`.")]
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }
 
 pub type Result<T, E = SocksError> = core::result::Result<T, E>;
