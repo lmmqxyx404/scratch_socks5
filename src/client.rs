@@ -1,8 +1,8 @@
 use anyhow::Context;
-use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    consts,
+    consts, read_exact,
     util::{
         stream::tcp_connect,
         target_addr::{TargetAddr, ToTargetAddr},
@@ -253,6 +253,16 @@ where
     /// 4. The server send a confirmation (reply) that he had successfully connected (or not) to the
     /// remote server.
     async fn read_request_reply(&mut self) -> Result<TargetAddr> {
+        let [version, reply, rsv, address_type] =
+            read_exact!(self.socket, [0u8; 4]).context("Received malformed reply")?;
+        debug!(
+                "Reply received: [version: {version}, reply: {reply}, rsv: {rsv}, address_type: {address_type}]",
+                version = version,
+                reply = reply,
+                rsv = rsv,
+                address_type = address_type,
+            );
+
         todo!()
     }
 }
