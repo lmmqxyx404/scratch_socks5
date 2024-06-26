@@ -20,6 +20,9 @@ pub enum SocksError {
     /// 4
     #[error("Domain exceeded max sequence length")]
     ExceededMaxDomainLen(usize),
+    /// 5
+    #[error("Unsupported SOCKS version `{0}`.")]
+    UnsupportedSocksVersion(u8),
 }
 
 pub type Result<T, E = SocksError> = core::result::Result<T, E>;
@@ -76,6 +79,7 @@ pub mod consts {
     pub const SOCKS5_CMD_TCP_BIND:                     u8 = 0x02;
     pub const SOCKS5_CMD_UDP_ASSOCIATE:                u8 = 0x03;
 
+    pub const SOCKS5_REPLY_SUCCEEDED:                  u8 = 0x00;
 }
 
 #[allow(dead_code)]
@@ -87,6 +91,17 @@ impl Socks5Command {
             Socks5Command::TCPConnect   => consts::SOCKS5_CMD_TCP_CONNECT,
             Socks5Command::TCPBind      => consts::SOCKS5_CMD_TCP_BIND,
             Socks5Command::UDPAssociate => consts::SOCKS5_CMD_UDP_ASSOCIATE,
+        }
+    }
+}
+
+impl ReplyError {
+    #[inline]
+    #[rustfmt::skip]
+    pub fn from_u8(code: u8) -> ReplyError {
+        match code {
+            consts::SOCKS5_REPLY_SUCCEEDED                  => ReplyError::Succeeded,
+            _                                               => unreachable!("ReplyError code unsupported."),
         }
     }
 }

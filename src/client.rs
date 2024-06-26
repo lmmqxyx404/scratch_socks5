@@ -2,12 +2,10 @@ use anyhow::Context;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use crate::{
-    consts, read_exact,
-    util::{
+    consts, read_exact, util::{
         stream::tcp_connect,
         target_addr::{TargetAddr, ToTargetAddr},
-    },
-    AuthenticationMethod, Result, Socks5Command, SocksError,
+    }, AuthenticationMethod, ReplyError, Result, Socks5Command, SocksError
 };
 
 use std::net::{SocketAddr, ToSocketAddrs};
@@ -262,7 +260,13 @@ where
                 rsv = rsv,
                 address_type = address_type,
             );
+        if version != consts::SOCKS5_VERSION {
+            return Err(SocksError::UnsupportedSocksVersion(version));
+        }
 
+        if reply != consts::SOCKS5_REPLY_SUCCEEDED {
+            return Err(ReplyError::from_u8(reply).into()); // Convert reply received into correct error
+        }
         todo!()
     }
 }
